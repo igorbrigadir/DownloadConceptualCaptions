@@ -10,16 +10,16 @@ import time
 from tqdm import tqdm
 
 # https://stackoverflow.com/questions/26784164/pandas-multiprocessing-apply
-def parallelize(data, func, num_of_processes):
+def parallelize(data, func, num_of_processes, **kwargs):
     data_split = np.array_split(data, 10000)
     print(len(data_split), "parts", len(data_split[0]), "images per part, on", num_of_processes, "processes", 2, "parts in chunk.")
     
-    data = pd.DataFrame()
+    results = []
     with Pool(num_of_processes) as pool:
         for i, df_ in enumerate(pool.imap_unordered(func, data_split, 2)):
-            data = data.append(df_, ignore_index=True)
+            results.append(df_)
             img_progress.update(len(df_))
-            #print(i, "chunk", "df_:", len(df_), "data", len(data))
+    data = pd.concat(results, ignore_index=True)
     return data
 
 def run_on_subset(func, data_subset):
@@ -89,10 +89,10 @@ def open_tsv(fname, folder):
 
 df = open_tsv("Validation_GCC-1.1.0-Validation.tsv","validation")
 img_progress = tqdm(desc="Downloading...", total=len(df), position=0)
-df = parallelize_on_rows(df, download_image, 64) # number of processes in the pool can be larger than cores
+df = parallelize_on_rows(df, fake_dload, 64) # number of processes in the pool can be larger than cores
 df.to_csv("downloaded_validation_report.tsv", sep='\t', header=False, index=False)
 
 df = open_tsv("Train_GCC-training.tsv","training")
 img_progress = tqdm(desc="Downloading...", total=len(df), position=0)
-df = parallelize_on_rows(df, download_image, 64) # number of processes in the pool can be larger than cores
+df = parallelize_on_rows(df, fake_dload, 64) # number of processes in the pool can be larger than cores
 df.to_csv("downloaded_training_report.tsv", sep='\t', header=False, index=False)

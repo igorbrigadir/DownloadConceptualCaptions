@@ -13,3 +13,5 @@ run `download_data.py`
 Images will be in `training` and `validation` folders. You can stop and resume, the settings for splitting downloads into chunks / threads are not optimal, but it maxed out my connection so i kept them as is.
 
 A bunch of them will fail to download, and return web pages instead. These will need to be cleaned up later. See `downloaded_validation_report.tsv` after it downloads for HTTP errors. Around 8% of images are gone, based on validation set results.
+
+It should take about a day to download the training data, but it's still running so i can't say for sure.

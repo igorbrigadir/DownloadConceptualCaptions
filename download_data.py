@@ -89,10 +89,10 @@ def open_tsv(fname, folder):
 
 df = open_tsv("Validation_GCC-1.1.0-Validation.tsv","validation")
 img_progress = tqdm(desc="Downloading...", total=len(df), position=0)
-df = parallelize_on_rows(df, fake_dload, 64) # number of processes in the pool can be larger than cores
+df = parallelize_on_rows(df, download_image, 64) # number of processes in the pool can be larger than cores
 df.to_csv("downloaded_validation_report.tsv", sep='\t', header=False, index=False)
 
 df = open_tsv("Train_GCC-training.tsv","training")
 img_progress = tqdm(desc="Downloading...", total=len(df), position=0)
-df = parallelize_on_rows(df, fake_dload, 64) # number of processes in the pool can be larger than cores
+df = parallelize_on_rows(df, download_image, 64) # number of processes in the pool can be larger than cores
 df.to_csv("downloaded_training_report.tsv", sep='\t', header=False, index=False)

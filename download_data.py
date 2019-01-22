@@ -32,14 +32,16 @@ def download_image(row):
     # Unique name based on url
     fname = "%s/%s" % (row['folder'], (zlib.crc32(row['url'].encode('utf-8')) & 0xffffffff))
 
-    # Skip Already downloaded
+    # Skip Already downloaded, retry others later
     if os.path.isfile(fname):
         row['status'] = 200
         row['file'] = fname
         return row
 
     try:
-        response = requests.get(row['url'], stream=True, timeout=2) # smaller timeout to skip errors
+        # use smaller timeout to skip errors, but can result in failed downloads
+        # stream=True and shutil uses less memory but also can cause incomplete downloads
+        response = requests.get(row['url'], stream=False, timeout=5) 
     except:
         # log errors later, set error as 408 timeout
         row['status'] = 408
@@ -60,16 +62,24 @@ def download_image(row):
             row['status'] = 415
             return row
 
-        with open(fname, 'wb') as out_file:
-            response.raw.decode_content = True  # just in case transport encoding was applied
-            shutil.copyfileobj(response.raw, out_file)
+        try:
+            with open(fname, 'wb') as out_file:
+                # some sites respond with gzip transport encoding
+                response.raw.decode_content = True
+                #shutil.copyfileobj(response.raw, out_file)
+                out_file.write(response.content)
+        except:
+            # This is if it times out during a download
+            row['status'] = 408
+            return row        
+        
         row['file'] = fname
 
     return row
 
 def open_tsv(fname, folder):
     print("Opening %s Data File..." % fname)
-    df = pd.read_csv(fname, sep='\t', names=["caption","url"])
+    df = pd.read_csv(fname, sep='\t', names=["caption","url"], usecols=range(1,2))
     df['folder'] = folder
     df['status'] = None
     df['file'] = None

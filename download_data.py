@@ -49,19 +49,6 @@ def download_image(row):
     
     row['status'] = response.status_code
     if response.ok:
-
-        # check for text / website not image:
-        if 'content-type' not in response.headers:
-            # Unsupported Media Type for text pages instead of images:
-            row['status'] = 415
-            return row
-
-        content_type = response.headers['content-type']
-        if "text" in content_type:
-            # Unsupported Media Type for text pages instead of images:
-            row['status'] = 415
-            return row
-
         try:
             with open(fname, 'wb') as out_file:
                 # some sites respond with gzip transport encoding

@@ -44,7 +44,7 @@ def df_multiprocess(df, processes, parts, func):
 def _file_name(row):
     return "%s/%s" % (row['folder'], (zlib.crc32(row['url'].encode('utf-8')) & 0xffffffff))
 
-# For checking mimetypes separately without download if needed
+# For checking mimetypes separately without download
 def check_mimetype(row):
     if os.path.isfile(str(row['file'])):
         row['mimetype'] = magic.from_file(row['file'], mime=True)
@@ -123,23 +123,23 @@ num_processes = 96
 # how many images per chunk per process
 images_per_part = 2
 
-# Validation download & check:
+# Validation download:
 df = open_tsv("Validation_GCC-1.1.0-Validation.tsv","validation")
 df = df_multiprocess(df=df, processes=num_processes, parts=int(len(df)/images_per_part), func=download_image)
 df.to_csv("downloaded_validation_report.tsv.gz", compression='gzip', sep='\t', header=False, index=False)
 
-# Training download & check:
+# Training download:
 df = open_tsv("Train_GCC-training.tsv","training")
 df = df_multiprocess(df=df, processes=num_processes, parts=int(len(df)/images_per_part), func=download_image)
 df.to_csv("downloaded_training_report.tsv.gz", compression='gzip', sep='\t', header=False, index=False)
 
-# Validation File mime type check only:
+# Validation mime type check only:
 #print('Checking Downloaded Files:')
 #df = pd.read_csv("downloaded_validation_report.tsv.gz", compression='gzip', sep='\t', names=["url","folder","status","mimetype","size","file","headers"])
 #df = df_multiprocess(df=df, processes=num_processes, parts=int(len(df)/images_per_part), func=check_mimetype)
 #df.to_csv("downloaded_validation_report.tsv.gz", compression='gzip', sep='\t', header=False, index=False)
 
-# Training check only:
+# Training HEAD request check only:
 #df = open_tsv("Train_GCC-training.tsv","training")
 #df = df_multiprocess(df=df, processes=num_processes, parts=int(len(df)/images_per_part), func=check_download)
 #df.to_csv("downloaded_training_report.tsv.gz", compression='gzip', sep='\t', header=False, index=False)

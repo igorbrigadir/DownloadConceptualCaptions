@@ -32,6 +32,24 @@ def df_multiprocess(df, processes, parts):
     pbar.close()
     return results
 
+# Don't download image, just check with a HEAD request
+# Can use this in _df_split_apply instead of download_image to get HTTP status codes
+def check_download(row):
+    # Unique name based on url
+    fname = "%s/%s" % (row['folder'], (zlib.crc32(row['url'].encode('utf-8')) & 0xffffffff))
+    try:
+        # not all sites will support HEAD
+        response = requests.head(row['url'], stream=False, timeout=2) 
+    except:
+        # log errors later, set error as 408 timeout
+        row['status'] = 408
+        return row
+
+    row['status'] = response.status_code
+    if response.ok:
+        row['file'] = fname
+    return row
+
 def download_image(row):
     # Unique name based on url
     fname = "%s/%s" % (row['folder'], (zlib.crc32(row['url'].encode('utf-8')) & 0xffffffff))

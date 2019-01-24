@@ -1,16 +1,12 @@
 import pandas as pd
-import swifter
 import numpy as np
-
 import requests
 import zlib
 import os
-
+import shelve
+import magic #pip install python-magic
 from multiprocessing import Pool
 from tqdm import tqdm
-
-import magic #pip install python-magic
-import shelve
 
 headers = {
     #'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
@@ -35,7 +31,6 @@ def df_multiprocess(df, processes, chunk_size, func, dataset_name):
             pbar.update(len(results[str(k)][1]))
 
         pool_data = ((index, df[i:i + chunk_size], func) for index, i in enumerate(range(0, len(df), chunk_size)) if index not in finished_chunks)
-        
         print(int(len(df) / chunk_size), "parts.", chunk_size, "per part.", "Using", processes, "processes")
  
         pbar.desc = "Downloading"
@@ -95,14 +90,13 @@ def download_image(row):
         # log errors later, set error as 408 timeout
         row['status'] = 408
         return row
-    
+   
     if response.ok:
         try:
             with open(fname, 'wb') as out_file:
                 # some sites respond with gzip transport encoding
                 response.raw.decode_content = True
                 out_file.write(response.content)
-
             row['mimetype'] = magic.from_file(row['file'], mime=True)
             row['size'] = os.stat(row['file']).st_size
         except:

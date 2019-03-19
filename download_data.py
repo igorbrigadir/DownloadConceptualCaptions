@@ -45,7 +45,7 @@ def df_multiprocess(df, processes, chunk_size, func, dataset_name):
 
 # Unique name based on url
 def _file_name(row):
-    return "%s/%s" % (row['folder'], (zlib.crc32(row['url'].encode('utf-8')) & 0xffffffff))
+    return "%s/%s_%s" % (row['folder'], row.name, (zlib.crc32(row['url'].encode('utf-8')) & 0xffffffff))
 
 # For checking mimetypes separately without download
 def check_mimetype(row):
